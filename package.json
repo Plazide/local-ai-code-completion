@@ -1,0 +1,77 @@
+{
+  "name": "local-code-completion",
+  "displayName": "",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.83.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "local-code-completion.generateCode",
+        "title": "Generate code"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "local-code-completion.generateCode",
+        "key": "Ctrl+Alt+C",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "local-code-completion.abortGeneration",
+        "key": "escape",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "local-code-completion.cancel",
+        "key": "escape",
+        "when": "editorTextFocus && completionAvailable"
+      },
+      {
+        "command": "local-code-completion.cancel",
+        "key": "down",
+        "when": "editorTextFocus && completionAvailable"
+      },
+      {
+        "command": "local-code-completion.cancel",
+        "key": "up",
+        "when": "editorTextFocus && completionAvailable"
+      },
+      {
+        "command": "local-code-completion.accept",
+        "key": "tab",
+        "when": "editorTextFocus && completionAvailable"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.2",
+    "@types/node": "^20.8.7",
+    "@types/vscode": "^1.83.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.3",
+    "@typescript-eslint/parser": "^6.7.3",
+    "@vscode/test-electron": "^2.3.4",
+    "glob": "^10.3.3",
+    "mocha": "^10.2.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "langchain": "^0.0.169"
+  }
+}
