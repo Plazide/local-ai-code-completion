@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Abort generation
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "local-code-completion.abortGeneration",
+      "local-ai-code-completion.abortGeneration",
       () => {
         aborted = true;
         vscode.window.showInformationMessage("Stopped generating code.");
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Cancel/deny code completion suggestion
   context.subscriptions.push(
     vscode.commands.registerTextEditorCommand(
-      "local-code-completion.cancel",
+      "local-ai-code-completion.cancel",
       (_, edit) => {
         if (range) {
           edit.delete(range);
@@ -61,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
   // Accept code completion.
   context.subscriptions.push(
     vscode.commands.registerTextEditorCommand(
-      "local-code-completion.accept",
+      "local-ai-code-completion.accept",
       (editor) => {
         editor.setDecorations(decorationType, []);
         vscode.commands.executeCommand(
@@ -80,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Generate code
   let disposable = vscode.commands.registerCommand(
-    "local-code-completion.generateCode",
+    "local-ai-code-completion.generateCode",
     async () => {
       aborted = false;
 

@@ -1,6 +1,6 @@
-# local-code-completion README
+# local-ai-code-completion README
 
-Enable AI Assisted code completion, similar to Github Copilot, completely locally. No code leaves your machine. This has two major benefits:
+Enables AI Assisted code completion, similar to Github Copilot, completely locally. No code leaves your machine. This has two major benefits:
 
 - **Cost**. This extension is completely free to use.
 - **Privacy**. No data is shared with third-parties, everything stays on your computer.
@@ -12,6 +12,10 @@ AI Assisted code completion.
 You trigger code completion by pressing <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>. GIF is sped up.
 
 [![usage example](./assets/example.gif)]
+
+The extension uses codellama 7B under the hood, which supports many languages including Python, C++, Java, PHP, Typescript (Javascript), C# and Bash.
+
+According to evaluation results from Meta, codellama 7B is almost on par with Codex, the model used by Github Copilot.
 
 ## Requirements
 
