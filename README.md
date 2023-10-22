@@ -19,7 +19,7 @@ According to evaluation results from Meta, codellama 7B is almost on par with Co
 
 ## Requirements
 
-This extension requires an [Ollama](https://ollama.ai/) installation to run the language model locally.
+This extension requires an [Ollama](https://ollama.ai/) installation to run the language model locally. Ollama does not currently support Windows, which also means that this extension is not compatible with Windows.
 
 <!-- ## Extension Settings
 
