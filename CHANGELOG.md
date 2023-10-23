@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.0.1] - 2023-10-23
+
+### Added
+
+- Additional usage instructions in README.
+
 ### Fixed
 
 - Escape key locked to abort generation, causing other escape key functions, such as closing intellisense, to not work.
