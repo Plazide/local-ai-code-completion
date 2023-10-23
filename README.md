@@ -11,7 +11,7 @@ AI Assisted code completion.
 
 You trigger code completion by pressing <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>. GIF is sped up.
 
-![usage example](./assets/example.gif)
+![usage example](./assets/lacc-example.gif)
 
 The extension uses codellama 7B under the hood, which supports many languages including Python, C++, Java, PHP, Typescript (Javascript), C# and Bash.
 
