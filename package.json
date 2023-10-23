@@ -4,6 +4,10 @@
 	"description": "Experience the power of AI-assisted coding, all while ensuring your privacy and wallet. This extension runs entirely on your local machine, you can enjoy intelligent coding without compromising the integrity of your code or budget.",
 	"icon": "./assets/lacc.png",
 	"version": "1.0.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Plazide/local-ai-code-completion"
+	},
 	"engines": {
 		"vscode": "^1.83.0"
 	},
