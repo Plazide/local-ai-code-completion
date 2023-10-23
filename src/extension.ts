@@ -107,6 +107,12 @@ export function activate(context: vscode.ExtensionContext) {
             "completionAvailable",
             true,
           );
+
+          vscode.commands.executeCommand(
+            "setContext",
+            "generatingCompletion",
+            false,
+          );
         }
 
         vscode.window
@@ -116,10 +122,20 @@ export function activate(context: vscode.ExtensionContext) {
               location: vscode.ProgressLocation.Notification,
               title: "AI Code Assistant is generating code...",
             },
-            async () => {
+            async (_, token) => {
               const prompt = await promptTemplate.format({ prefix, suffix });
               const stream = await ollama.stream(prompt);
               const chunks = [];
+
+              token.onCancellationRequested(() => {
+                aborted = true;
+              });
+
+              vscode.commands.executeCommand(
+                "setContext",
+                "generatingCompletion",
+                true,
+              );
 
               for await (const chunk of stream) {
                 if (aborted) {
@@ -164,16 +180,19 @@ export function activate(context: vscode.ExtensionContext) {
             },
           )
           .then(
-            () => {
+            (val) => {
               if (!aborted) {
                 vscode.window.showInformationMessage(
                   "Code has been generated.",
                 );
               }
 
+              console.log({ fulfilled: val });
+
               onFinish();
             },
-            () => {
+            (val) => {
+              console.log({ rejected: val });
               onFinish();
             },
           );

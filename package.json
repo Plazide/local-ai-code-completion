@@ -33,7 +33,7 @@
 			{
 				"command": "local-ai-code-completion.abortGeneration",
 				"key": "escape",
-				"when": "editorTextFocus"
+				"when": "editorTextFocus && generatingCompletion"
 			},
 			{
 				"command": "local-ai-code-completion.cancel",
