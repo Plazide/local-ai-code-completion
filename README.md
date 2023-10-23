@@ -9,7 +9,15 @@ Enables AI Assisted code completion, similar to Github Copilot, completely local
 
 AI Assisted code completion.
 
-You trigger code completion by pressing <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>. GIF is sped up.
+You trigger code completion by pressing <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>.
+
+You accept a completion by pressing <kbd>Tab</kbd>.
+
+You cancel an ongoing completion by pressing <kbd>Escape</kbd>.
+
+You delete a non-accepted completion by pressing <kbd>Escape</kbd>.
+
+GIF is sped up.
 
 ![usage example](./assets/lacc-example.gif)
 
