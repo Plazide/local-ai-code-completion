@@ -6,7 +6,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-## Changed
+## [1.0.2] - 2023-10-25
+
+### Changed
 
 - Switched model to codellama:7b-code-q4_K_S from codellama:7b-code. This noticeably increases generation speed.
 
