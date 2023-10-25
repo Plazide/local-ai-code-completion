@@ -6,6 +6,10 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+### Fixed
+
+- Server seemingly not starting when triggering generation for the first time.
+
 ## [1.0.1] - 2023-10-23
 
 ### Added
