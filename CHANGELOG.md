@@ -6,9 +6,15 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## Improvements
+
+- Switched model to codellama:7b-code-q4_K_S from codellama:7b-code. This noticeably increases generation speed.
+
 ### Fixed
 
-- Server seemingly not starting when triggering generation for the first time.
+- Ollama server seemingly not starting when triggering generation for the first time.
+
+---
 
 ## [1.0.1] - 2023-10-23
 
@@ -20,6 +26,8 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 - Escape key locked to abort generation, causing other escape key functions, such as closing intellisense, to not work.
 - Cancel button in progress notification not working.
+
+---
 
 ## [1.0.0] - 2023-10-23
 

@@ -5,7 +5,7 @@ import { Ollama } from "langchain/llms/ollama";
 import { PromptTemplate } from "langchain/prompts";
 import setup from "./setup";
 
-const model = "codellama:7b-code";
+const model = "codellama:7b-code-q4_K_S";
 const ollama = new Ollama({
   model,
   temperature: 0.1,
@@ -24,6 +24,8 @@ export async function activate(context: vscode.ExtensionContext) {
   const decorationType = vscode.window.createTextEditorDecorationType({
     color: "#808080",
   });
+
+  const start = performance.now();
 
   const success = await setup(model);
   if (!success) return;
@@ -114,6 +116,9 @@ export async function activate(context: vscode.ExtensionContext) {
             "generatingCompletion",
             false,
           );
+
+          const now = performance.now();
+          console.log("Total time:", (now - start) / 1000, "seconds");
         }
 
         vscode.window
