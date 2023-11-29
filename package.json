@@ -18,6 +18,30 @@
 	"activationEvents": [],
 	"main": "./out/extension.js",
 	"contributes": {
+		"configuration": {
+			"title": "LocalAiCodeCompletion",
+			"properties": {
+				"chjweb.local-ai-code-completion.model.name": {
+					"type": "string",
+					"default": "codellama:7b-code-q4_K_S",
+					"description": "Define which model ollama should use."
+				},
+				"chjweb.local-ai-code-completion.model.temperature": {
+					"type": "number",
+					"default": 0.3,
+					"minimum": 0,
+					"maximum": 2,
+					"description": "Level of randomness in generating responses. 0 = Deterministic, 0.3 - 0.7 ~= 'optimal' range, 1+ for the adventurous type"
+				},
+				"chjweb.local-ai-code-completion.model.top_p": {
+					"type": "number",
+					"default": 0.3,
+					"minimum": 0,
+					"maximum": 1,
+					"description": "Controls diverse output by filtering probabilities. Higher values include more choices, impacting generated sequences dynamically."
+				}
+			}
+		},
 		"commands": [
 			{
 				"command": "local-ai-code-completion.generateCode",
