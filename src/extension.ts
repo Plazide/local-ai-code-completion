@@ -5,11 +5,21 @@ import { Ollama } from "langchain/llms/ollama";
 import { PromptTemplate } from "langchain/prompts";
 import setup from "./setup";
 
-const model = "codellama:7b-code-q4_K_S";
+const cfg = vscode.workspace.getConfiguration();
+const model = cfg.get(
+    "chjweb.local-ai-code-completion.model.name",
+    "codellama:7b-code-q4_K_S",
+);
+const temperature = cfg.get(
+    "chjweb.local-ai-code-completion.model.temperature",
+    0.3,
+);
+const topP = cfg.get("chjweb.local-ai-code-completion.model.top_p", 0.3);
+
 const ollama = new Ollama({
-  model,
-  temperature: 0.1,
-  topP: 0.3,
+    model,
+    temperature,
+    topP,
 });
 
 const promptTemplate = PromptTemplate.fromTemplate(
