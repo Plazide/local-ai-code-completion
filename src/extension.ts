@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 import { Ollama } from "langchain/llms/ollama";
 import { PromptTemplate } from "langchain/prompts";
 import setup from "./setup";
+import { logger } from "./logger";
 
 const cfg = vscode.workspace.getConfiguration();
 const model = cfg.get(
@@ -17,9 +18,9 @@ const temperature = cfg.get(
 const topP = cfg.get("chjweb.local-ai-code-completion.model.top_p", 0.3);
 
 const ollama = new Ollama({
-    model,
-    temperature,
-    topP,
+  model,
+  temperature,
+  topP,
 });
 
 const promptTemplate = PromptTemplate.fromTemplate(
@@ -128,7 +129,7 @@ export async function activate(context: vscode.ExtensionContext) {
           );
 
           const now = performance.now();
-          console.log("Total time:", (now - start) / 1000, "seconds");
+          logger.debug("Total time:", (now - start) / 1000, "seconds");
         }
 
         vscode.window
@@ -229,4 +230,6 @@ function findLine(text: string, endLine: number, startLine: number): string {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() {
+  logger.dispose();
+}
