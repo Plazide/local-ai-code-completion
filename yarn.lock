@@ -1054,6 +1054,11 @@ object-hash@^3.0.0:
   resolved "https://registry.yarnpkg.com/object-hash/-/object-hash-3.0.0.tgz#73f97f753e7baffc0e2cc9d6e079079744ac82e9"
   integrity sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==
 
+ollama@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/ollama/-/ollama-0.3.0.tgz#278aecba32e890b732cd017f85ac10d703c9d7a3"
+  integrity sha512-+eaNmtirwiAcfLW84RUZA2rhEwl7pOtLJ39zTVkBWRbRQ1Q1JubTf1k/wmxvICs1APVA+iYgYeYif0n5GUflhw==
+
 once@^1.3.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/once/-/once-1.4.0.tgz#583b1aa775961d4b113ac17d9c50baef9dd76bd1"

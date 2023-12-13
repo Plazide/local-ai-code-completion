@@ -1,36 +1,39 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { Ollama } from "langchain/llms/ollama";
-import { PromptTemplate } from "langchain/prompts";
-import setup from "./setup";
-import { logger } from "./logger";
+import { logger } from "./logger.js";
+import setup from "./setup.js";
 
-const cfg = vscode.workspace.getConfiguration();
-const model = cfg.get(
-    "chjweb.local-ai-code-completion.model.name",
-    "codellama:7b-code-q4_K_S",
+const cfg = vscode.workspace.getConfiguration(
+  "chjweb.local-ai-code-completion.model",
 );
-const temperature = cfg.get(
-    "chjweb.local-ai-code-completion.model.temperature",
-    0.3,
-);
-const topP = cfg.get("chjweb.local-ai-code-completion.model.top_p", 0.3);
+const model = cfg.get("name", "codellama:7b-code-q4_K_S");
+const temperature = cfg.get("temperature", 0.3);
+const topP = cfg.get("top_p", 0.3);
+const timeout = cfg.get("timeout", 15000);
+const baseUrl = cfg.get("baseUrl", "http://localhost:11434");
 
-const ollama = new Ollama({
-  model,
-  temperature,
-  topP,
-});
-
-const promptTemplate = PromptTemplate.fromTemplate(
-  `<PRE>{prefix} <SUF>{suffix} <MID>`,
+const ollamaPromise = import("langchain/llms/ollama").then(
+  ({ Ollama }) =>
+    new Ollama({
+      baseUrl,
+      maxConcurrency: 1,
+      model,
+      temperature,
+      topP,
+    }),
 );
 
+const promptTemplatePromise = import("langchain/prompts").then(
+  ({ PromptTemplate }) =>
+    PromptTemplate.fromTemplate(`<PRE>{prefix} <SUF>{suffix} <MID>`),
+);
+
+let serverController: AbortController | undefined;
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
+let isCurrentGenAborted = false;
 export async function activate(context: vscode.ExtensionContext) {
-  let aborted = false;
   let range: vscode.Range | null = null;
   const decorationType = vscode.window.createTextEditorDecorationType({
     color: "#808080",
@@ -38,15 +41,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const start = performance.now();
 
-  const success = await setup(model);
-  if (!success) return;
+  try {
+    serverController = await setup(model);
+  } catch (error) {
+    logger.error("Failed to setup the extension", error);
+  }
 
   // Abort generation
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "local-ai-code-completion.abortGeneration",
       () => {
-        aborted = true;
+        isCurrentGenAborted = true;
         vscode.window.showInformationMessage("Stopped generating code.");
       },
     ),
@@ -96,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     "local-ai-code-completion.generateCode",
     async () => {
-      aborted = false;
+      isCurrentGenAborted = false;
 
       const editor = vscode.window.activeTextEditor;
       if (editor) {
@@ -140,12 +146,18 @@ export async function activate(context: vscode.ExtensionContext) {
               title: "AI Code Assistant is generating code...",
             },
             async (_, token) => {
-              const prompt = await promptTemplate.format({ prefix, suffix });
-              const stream = await ollama.stream(prompt);
+              const promptTemplate = await promptTemplatePromise;
+              const ollama = await ollamaPromise;
+
+              const prompt = await promptTemplate.format({
+                prefix,
+                suffix,
+              });
+              const stream = await ollama.stream(prompt, { timeout });
               const chunks = [];
 
               token.onCancellationRequested(() => {
-                aborted = true;
+                isCurrentGenAborted = true;
               });
 
               vscode.commands.executeCommand(
@@ -155,7 +167,8 @@ export async function activate(context: vscode.ExtensionContext) {
               );
 
               for await (const chunk of stream) {
-                if (aborted) {
+                if (isCurrentGenAborted) {
+                  await stream.cancel();
                   break;
                 }
 
@@ -198,7 +211,7 @@ export async function activate(context: vscode.ExtensionContext) {
           )
           .then(
             () => {
-              if (!aborted) {
+              if (!isCurrentGenAborted) {
                 vscode.window.showInformationMessage(
                   "Code has been generated.",
                 );
@@ -231,5 +244,6 @@ function findLine(text: string, endLine: number, startLine: number): string {
 
 // This method is called when your extension is deactivated
 export function deactivate() {
+  serverController?.abort("exiting");
   logger.dispose();
 }
