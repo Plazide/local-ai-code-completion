@@ -47,6 +47,12 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 1.1.0
+
+Added options for changing model, temperature and top_p parameters.
+
+---
+
 ### 1.0.0
 
 Initial release.

@@ -6,6 +6,12 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.1.0] - 2023-12-16
+
+### Added
+
+- Options for changing model, temperature and top_p parameters. Thanks to [@Entaigner](https://github.com/Entaigner) for adding this.
+
 ## [1.0.2] - 2023-10-25
 
 ### Changed
