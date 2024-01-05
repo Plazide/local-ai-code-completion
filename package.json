@@ -102,6 +102,7 @@
 		"typescript": "^5.2.2"
 	},
 	"dependencies": {
-		"langchain": "^0.0.169"
+		"langchain": "^0.0.169",
+		"ollama": "^0.3.0"
 	}
 }

@@ -1,148 +1,172 @@
-import { ExecException, exec } from "child_process";
+import { exec } from "node:child_process";
+import { promisify } from "util";
 import * as vscode from "vscode";
+import { logger } from "./logger.js";
 
-export default async function setup(model: string) {
-  return new Promise((resolve, reject) => {
+// TODO: Use api instead of cli
+const execAsync = promisify(exec);
+
+let ollama = import("ollama").then((m) => {
+  // TODO: Add config for remote Ollama
+  return new m.Ollama();
+});
+
+export default async function setup(
+  model: string,
+): Promise<AbortController | undefined> {
+  try {
+    // Check if Ollama is installed.
     // Installing Ollama automatically on MacOS might not be possible as it requires an installer. We will instead provide a link to the download page on the Ollama website.
-    exec("ollama --version", (error) => {
-      // Check if Ollama is installed.
-      if (error) {
-        console.log("Ollama is not installed.");
+    await execAsync("ollama --version");
+  } catch (error) {
+    logger.error("Ollama is not installed.", error);
 
-        // Ask user to install Ollama manually.
-        requestOllamaInstallation();
-      } else {
-        // Check if Ollama server is running.
-        exec("ollama list", async (error) => {
-          console.log(
-            "Running 'ollama list' to check if ollama server is running.",
-          );
+    // Ask user to install Ollama manually.
+    await requestOllamaInstallation();
+  }
 
-          const serverStarted = await startOllamaServer(error);
-          if (serverStarted) {
-            const modelInstalled = await ensureModel(model);
-            resolve(modelInstalled);
-          } else {
-            resolve(false);
-          }
-        });
-      }
-    });
-  });
+  try {
+    logger.info("Checking if Ollama server is running.");
+
+    const ollamaClient = await ollama;
+    await ollamaClient.tags();
+
+    logger.info("Ollama server is running.");
+
+    return;
+  } catch (error) {
+    const serverController = await startOllamaServer();
+    await ensureModel(model);
+
+    return serverController;
+  }
 }
 
 // check if model is installed and install if it is not.
-async function ensureModel(model: string) {
-  return new Promise((resolve, reject) => {
-    exec(`ollama list`, (error, stdout) => {
-      if (error) throw error;
+async function ensureModel(modelStr: string) {
+  const ollamaClient = await ollama;
+  const tags = await ollamaClient.tags();
+  const [model, tag = "latest"] = modelStr.split(":");
+  const fullModel = `${model}:${tag}`;
 
-      if (!stdout.includes(model)) {
-        vscode.window
-          .withProgress(
-            {
-              location: vscode.ProgressLocation.Notification,
-              title: "Installing language model. This can take a while...",
-              cancellable: false,
-            },
-            async (progress) => {
-              return new Promise((resolve, reject) => {
-                const proc = exec(`ollama pull ${model}`);
+  if (tags.find((t) => t.name === fullModel)) {
+    logger.info("Language model is already installed.");
+    return;
+  }
 
-                proc.stdout?.addListener("data", (data) => {
-                  console.log(`stdout: ${data}`);
-                });
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Installing language model. This can take a while...",
+        cancellable: false,
+      },
+      async (progress): Promise<boolean> => {
+        let lastByStatus: Record<string, number> = {},
+          lastStatus = "";
 
-                proc.stderr?.addListener("data", (chunk) => {
-                  const regex = /(\d+)%/gim;
-                  const match = chunk.match(regex);
+        for await (const pr of ollamaClient.pull(fullModel)) {
+          logger.debug("Pulling", pr);
 
-                  if (match) {
-                    const percent = match[0].replace("%", "");
+          const percentStr = pr.total
+            ? ((pr.completed / pr.total) * 100).toFixed(2)
+            : "0";
+          const percent = parseFloat(percentStr);
+          const last = lastByStatus[pr.status] ?? (lastStatus ? 100 : 0);
 
-                    progress.report({
-                      message: "Installing...",
-                      increment: parseInt(percent),
-                    });
-                  }
-                });
+          const increment = percent - last;
+          progress.report({
+            message: pr.status,
+            increment,
+          });
 
-                proc.on("close", (code) => {
-                  if (code !== 0) {
-                    reject(
-                      new Error(`ollama pull process exited with code ${code}`),
-                    );
-                  } else {
-                    resolve("");
-                  }
-                });
-              });
-            },
-          )
-          .then(
-            () => {
-              vscode.window.showInformationMessage(
-                "Language model has been installed. Please reload window to enable it.",
-              );
+          lastByStatus[pr.status] = percent;
+          lastStatus = pr.status;
+        }
 
-              resolve(true);
-            },
-            () => {
-              vscode.window.showErrorMessage(
-                `Language model has failed to install. Please open Ollama in your terminal and run \`ollama pull ${model}\``,
-              );
+        return true;
+      },
+    );
 
-              resolve(false);
-            },
-          );
-      } else {
-        console.log("Language model is already installed.");
-        resolve(true);
-      }
-    });
-  });
+    vscode.window.showInformationMessage("Language model has been installed.");
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Language model has failed to install. Please open Ollama in your terminal and run \`ollama pull ${fullModel}\``,
+    );
+    throw error;
+  }
 }
 
-function requestOllamaInstallation() {
-  vscode.window
-    .showInformationMessage(
-      "The Local AI code assistant extension requires a Ollama installation. Install Ollama and reload the vscode window.",
-      "Install Ollama",
-    )
-    .then((value) => {
-      if (value === "Install Ollama") {
-        const url = vscode.Uri.parse("https://ollama.ai/download");
-        vscode.env.openExternal(url);
-      }
-    });
+async function requestOllamaInstallation() {
+  const downloadText = "Install Ollama";
+  const res = await vscode.window.showInformationMessage(
+    "The Local AI code assistant extension requires a Ollama installation. Install Ollama and reload the vscode window.",
+    downloadText,
+  );
+
+  if (res !== downloadText) return;
+
+  const url = vscode.Uri.parse("https://ollama.ai/download");
+  vscode.env.openExternal(url);
 }
 
-function startOllamaServer(error: ExecException | null) {
-  return new Promise((resolve) => {
-    if (error?.message.includes("could not connect to ollama server")) {
-      vscode.window.showInformationMessage("Starting Ollama server.");
+async function startOllamaServer() {
+  const { promise, resolve, reject } = makeCompleter<AbortController>();
+  logger.info("Ollama server not running. Starting server...");
+  vscode.window.showInformationMessage("Starting Ollama server.");
 
-      console.log("Ollama server not running. Starting server...");
-      exec("ollama serve");
+  const controller = new AbortController();
 
-      // Use timeout to wait for server to start. Possibly replace this with a while loop.
-      setTimeout(() => {
-        exec("ollama list", async (error) => {
-          if (!error) {
-            console.log("Ollama server started.");
-            vscode.window.showInformationMessage("Ollama server started.");
-            // const modelInstalled = await ensureModel(model);
-            resolve(true);
-          } else {
-            console.error(error);
-            vscode.window.showErrorMessage("Failed to start Ollama server.");
-            resolve(false);
-          }
-        });
-      }, 2000);
-    } else {
-      // const modelInstalled = await ensureModel(model);
-      resolve(true);
-    }
+  const proc = start();
+  function onStart(c: string) {
+    if (!String.prototype.includes.call(c, "Listening on")) return;
+
+    vscode.window.showInformationMessage("Ollama server started.");
+
+    proc.stdout?.off("data", onStart);
+    proc.stderr?.off("data", onStart);
+    resolve(controller);
+  }
+
+  proc.stdout?.on("data", onStart);
+  proc.stderr?.on("data", onStart);
+  proc.once("error", reject);
+
+  return promise;
+
+  function start() {
+    return exec(
+      "ollama serve",
+      {
+        signal: controller.signal,
+      },
+      (err, stdout, stderr) => {
+        if (err) {
+          logger.error("Ollama server exited prematurely", err, stderr);
+          vscode.window.showErrorMessage("Failed to start Ollama server.");
+        }
+
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        logger.info("Retrying to start Ollama server");
+        start();
+      },
+    );
+  }
+}
+
+function makeCompleter<T = void>() {
+  type PromiseThenParams = Parameters<Promise<T>["then"]>;
+
+  let resolve!: NonNullable<PromiseThenParams[0]>,
+    reject!: NonNullable<PromiseThenParams[1]>;
+
+  const promise = new Promise<T>((r1, r2) => {
+    resolve = r1;
+    reject = r2;
   });
+
+  return { promise, resolve, reject };
 }
