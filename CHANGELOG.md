@@ -6,6 +6,25 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-01-05
+
+### Added
+
+- Config option for generation timeout
+- Config options for baseUrl of Ollama API (enables use of the extension with a remote or local Ollama server)
+
+### Changed
+
+- Improved logging
+
+### Fixed
+
+- Bug where aborting generation would not work
+
+Thanks to [@johnnyasantoss](https://github.com/johnnyasantoss) for making these changes.
+
+---
+
 ## [1.1.0] - 2023-12-16
 
 ### Added

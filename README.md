@@ -47,6 +47,25 @@ This extension contributes the following settings:
 
 ## Release Notes
 
+### 1.2.0
+
+#### Added
+
+- Config option for generation timeout
+- Config options for baseUrl of Ollama API (enables use of the extension with a remote or local Ollama server)
+
+#### Changed
+
+- Improved logging
+
+#### Fixed
+
+- Bug where aborting generation would not work
+
+Thanks to [@johnnyasantoss](https://github.com/johnnyasantoss) for making these changes.
+
+---
+
 ### 1.1.0
 
 Added options for changing model, temperature and top_p parameters.
